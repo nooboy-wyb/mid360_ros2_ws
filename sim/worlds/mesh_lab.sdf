@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<sdf version="1.8">
+  <world name="mesh_lab">
+    <gravity>0 0 -9.81</gravity>
+    <physics name="step" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+    </physics>
+    <plugin filename="ignition-gazebo-physics-system" name="gz::sim::systems::Physics"/>
+    <plugin filename="ignition-gazebo-user-commands-system" name="gz::sim::systems::UserCommands"/>
+    <plugin filename="ignition-gazebo-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="ignition-gazebo-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <plugin filename="ignition-gazebo-imu-system" name="gz::sim::systems::Imu"/>
+    <light name="sun" type="directional">
+      <pose>0 0 8 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1</diffuse>
+      <direction>-0.3 -0.4 -0.8</direction>
+    </light>
+    <model name="floor">
+      <static>true</static>
+      <link name="floor_link">
+        <pose>0 0 -0.05 0 0 0</pose>
+        <collision name="floor_collision"><geometry><box><size>15 15 0.1</size></box></geometry></collision>
+        <visual name="floor_visual"><geometry><box><size>15 15 0.1</size></box></geometry></visual>
+      </link>
+    </model>
+    <include><uri>model://turtlebot3_world</uri></include>
+    <model name="mid360_agv">
+      <pose>0 -2 0.1 0 0 0</pose>
+      <link name="base_link">
+        <pose>0 0 0.12 0 0 0</pose>
+        <inertial>
+          <mass>8</mass>
+          <inertia><ixx>0.1</ixx><iyy>0.12</iyy><izz>0.15</izz></inertia>
+        </inertial>
+        <collision name="body_collision"><geometry><box><size>0.36 0.30 0.16</size></box></geometry></collision>
+        <visual name="body_visual"><geometry><box><size>0.36 0.30 0.16</size></box></geometry>
+          <material><diffuse>0.1 0.35 0.8 1</diffuse></material></visual>
+      </link>
+      <link name="left_wheel">
+        <pose>0 0.19 0 1.5707963 0 0</pose>
+        <inertial><mass>0.5</mass><inertia><ixx>0.003</ixx><iyy>0.003</iyy><izz>0.003</izz></inertia></inertial>
+        <collision name="collision"><geometry><cylinder><radius>0.10</radius><length>0.05</length></cylinder></geometry></collision>
+        <visual name="visual"><geometry><cylinder><radius>0.10</radius><length>0.05</length></cylinder></geometry></visual>
+      </link>
+      <link name="right_wheel">
+        <pose>0 -0.19 0 1.5707963 0 0</pose>
+        <inertial><mass>0.5</mass><inertia><ixx>0.003</ixx><iyy>0.003</iyy><izz>0.003</izz></inertia></inertial>
+        <collision name="collision"><geometry><cylinder><radius>0.10</radius><length>0.05</length></cylinder></geometry></collision>
+        <visual name="visual"><geometry><cylinder><radius>0.10</radius><length>0.05</length></cylinder></geometry></visual>
+      </link>
+      <joint name="left_wheel_joint" type="revolute">
+        <parent>base_link</parent><child>left_wheel</child>
+        <axis><xyz>0 0 1</xyz></axis>
+      </joint>
+      <joint name="right_wheel_joint" type="revolute">
+        <parent>base_link</parent><child>right_wheel</child>
+        <axis><xyz>0 0 1</xyz></axis>
+      </joint>
+      <link name="rear_caster">
+        <pose>-0.14 0 -0.04 0 0 0</pose>
+        <inertial><mass>0.1</mass><inertia><ixx>0.0001</ixx><iyy>0.0001</iyy><izz>0.0001</izz></inertia></inertial>
+        <collision name="collision"><geometry><sphere><radius>0.06</radius></sphere></geometry></collision>
+        <visual name="visual"><geometry><sphere><radius>0.06</radius></sphere></geometry></visual>
+      </link>
+      <joint name="caster_joint" type="fixed"><parent>base_link</parent><child>rear_caster</child></joint>
+      <link name="mid360_link">
+        <pose>0 0 0.42 0 0 0</pose>
+        <inertial><mass>0.25</mass><inertia><ixx>0.0002</ixx><iyy>0.0002</iyy><izz>0.0002</izz></inertia></inertial>
+        <visual name="visual"><geometry><cylinder><radius>0.05</radius><length>0.07</length></cylinder></geometry>
+          <material><diffuse>0.05 0.05 0.05 1</diffuse></material></visual>
+        <sensor name="mid360_approx" type="gpu_lidar">
+          <topic>/mid360_sim/points</topic><always_on>true</always_on><update_rate>10</update_rate>
+          <lidar><scan>
+            <horizontal><samples>720</samples><resolution>1</resolution><min_angle>-3.14159265</min_angle><max_angle>3.14159265</max_angle></horizontal>
+            <vertical><samples>16</samples><resolution>1</resolution><min_angle>-0.45</min_angle><max_angle>0.45</max_angle></vertical>
+          </scan><range><min>0.2</min><max>12</max><resolution>0.01</resolution></range></lidar>
+          <visualize>false</visualize>
+        </sensor>
+      </link>
+      <joint name="mid360_joint" type="fixed"><parent>base_link</parent><child>mid360_link</child></joint>
+      <link name="mid360_imu_link">
+        <pose>0 0 0.42 0 0 0</pose>
+        <inertial><mass>0.01</mass><inertia><ixx>0.00001</ixx><iyy>0.00001</iyy><izz>0.00001</izz></inertia></inertial>
+        <sensor name="mid360_imu" type="imu"><topic>/mid360_sim/imu</topic><always_on>true</always_on><update_rate>100</update_rate></sensor>
+      </link>
+      <joint name="mid360_imu_joint" type="fixed"><parent>mid360_link</parent><child>mid360_imu_link</child></joint>
+      <plugin filename="ignition-gazebo-diff-drive-system" name="gz::sim::systems::DiffDrive">
+        <left_joint>left_wheel_joint</left_joint><right_joint>right_wheel_joint</right_joint>
+        <wheel_separation>0.38</wheel_separation><wheel_radius>0.10</wheel_radius>
+        <topic>/cmd_vel</topic><odom_topic>/wheel_odom_debug</odom_topic><tf_topic>/wheel_tf_debug</tf_topic>
+        <frame_id>wheel_odom_debug</frame_id><child_frame_id>base_link</child_frame_id>
+      </plugin>
+    </model>
+  </world>
+</sdf>

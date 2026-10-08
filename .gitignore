@@ -1,0 +1,12 @@
+/build/
+/install/
+/log/
+/sim/output/
+**/ros_logs/
+**/gazebo_logs/
+*.db3
+*.pcd
+__pycache__/
+*.py[cod]
+**/.git/
+/vendor_audit/
